@@ -5,7 +5,7 @@
 
 TrayIcon::TrayIcon()
 {
-  tray.setIcon(QIcon::fromTheme("video-display"));
+  tray.setIcon(QIcon(":/icons/settings.svg"));
 
   setlocale(LC_NUMERIC, "C");
   if (!ww)
