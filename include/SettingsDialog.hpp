@@ -36,4 +36,12 @@ private:
 
   QPushButton* playPauseBtn = nullptr;
   bool         playing      = false;
+
+  void    loadRecentFiles();
+  void    saveRecentFile(const QString& path);
+  void    loadFile(const QString& path);
+  QString extractThumbnail(const QString& videoPath);
+
+  QPushButton* thumbBtns[3] = {};
+  QString      recentFiles[3];
 };

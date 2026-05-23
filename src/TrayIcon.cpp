@@ -20,6 +20,13 @@ TrayIcon::TrayIcon()
                    sd.show();
                  });
 
+  menu.addAction("Quit",
+                 []()
+                 {
+                   std::cout << "Quit" << std::endl;
+                   qApp->quit();
+                 });
+
   tray.setContextMenu(&menu);
 
   QAction::connect(&sd, &SettingsDialog::fileSelected, ww,

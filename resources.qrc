@@ -1,6 +1,7 @@
 <RCC>
   <qresource prefix="/">
 		<file>style.qss</file>
+		<file>CascadiaCode.ttf</file>
 
 		<file>icons/file.svg</file>
 		<file>icons/minus.svg</file>

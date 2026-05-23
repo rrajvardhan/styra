@@ -1,13 +1,17 @@
 #include "SettingsDialog.hpp"
 #include <QCloseEvent>
 #include <QFileDialog>
+#include <QFileInfo>
+#include <QProcess>
+#include <QSettings>
+#include <QStandardPaths>
 
 SettingsDialog::SettingsDialog(QWidget* parent)
     : QDialog(parent)
 {
   setWindowTitle("[ styra ]");
   setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
-  setFixedSize(340, 170);
+  setFixedWidth(340);
 
   auto* root = new QVBoxLayout(this);
   root->setSpacing(0);
@@ -32,16 +36,41 @@ SettingsDialog::SettingsDialog(QWidget* parent)
   root->addLayout(titlebar);
 
   // --- Subtitle ---
-  fileInfo = new QLabel("No file selected");
-  fileInfo->setAlignment(Qt::AlignLeft);
-  fileInfo->setContentsMargins(14, 0, 14, 0);
-  fileInfo->setObjectName("fileInfo");
-  root->addWidget(fileInfo);
+  // fileInfo = new QLabel("No file selected");
+  // fileInfo->setAlignment(Qt::AlignLeft);
+  // fileInfo->setContentsMargins(14, 0, 14, 6);
+  // fileInfo->setObjectName("fileInfo");
+  // root->addWidget(fileInfo);
 
   auto* tile = new QFrame();
   tile->setObjectName("tile");
   auto* tileLayout = new QVBoxLayout(tile);
   tileLayout->setAlignment(Qt::AlignCenter);
+  auto* recentsLabel = new QLabel("recently used:");
+  tileLayout->addWidget(recentsLabel, 1);
+
+  // --- Recent files row ---
+  auto* thumbRow = new QHBoxLayout();
+  thumbRow->setContentsMargins(0, 8, 0, 8);
+  thumbRow->setSpacing(8);
+
+  for (int i = 0; i < 3; i++)
+  {
+    thumbBtns[i] = new QPushButton();
+    thumbBtns[i]->setFixedSize(96, 64);
+    thumbBtns[i]->setObjectName("thumbBtn");
+    thumbBtns[i]->setIconSize(QSize(96, 64));
+    connect(thumbBtns[i], &QPushButton::clicked, this,
+            [this, i]()
+            {
+              const QString path = recentFiles[i];
+              if (!path.isEmpty())
+                loadFile(path);
+            });
+    thumbRow->addWidget(thumbBtns[i]);
+  }
+
+  tileLayout->addLayout(thumbRow);
 
   // --- Speed slider inside tile ---
   speedSlider = new QSlider(Qt::Horizontal);
@@ -116,6 +145,9 @@ SettingsDialog::SettingsDialog(QWidget* parent)
             speedLabel->setText(QString("%1×").arg(speed, 0, 'f', 2));
             emit speedChanged(speed);
           });
+
+  loadRecentFiles();
+  adjustSize();
 }
 
 SettingsDialog::~SettingsDialog()
@@ -128,13 +160,74 @@ SettingsDialog::onBrowseClicked()
   const QString path = QFileDialog::getOpenFileName(
       this, "Select Video", {},
       "Videos (*.mp4 *.mkv *.webm *.avi *.mov *.flv *.wmv);;All Files (*)");
-
   if (path.isEmpty())
     return;
+  loadFile(path);
+}
 
-  fileInfo->setText(path);
-  emit fileSelected(path);
+void
+SettingsDialog::loadFile(const QString& path)
+{
+  // fileInfo->setText(QFileInfo(path).fileName());
+  const QString resolvedPath = path;
+  saveRecentFile(resolvedPath);
+  loadRecentFiles();
+  emit fileSelected(resolvedPath);
   playing = true;
+  playPauseBtn->setIcon(QIcon(":/icons/pause.svg"));
+}
+
+void
+SettingsDialog::saveRecentFile(const QString& path)
+{
+  QSettings   s("styra", "styra");
+  QStringList recent = s.value("recentFiles").toStringList();
+  recent.removeAll(path);
+  recent.prepend(path);
+  while (recent.size() > 3)
+    recent.removeLast();
+  s.setValue("recentFiles", recent);
+}
+
+void
+SettingsDialog::loadRecentFiles()
+{
+  QSettings   s("styra", "styra");
+  QStringList recent = s.value("recentFiles").toStringList();
+  for (int i = 0; i < 3; i++)
+  {
+    recentFiles[i] = (i < recent.size()) ? recent[i] : "";
+    if (recentFiles[i].isEmpty())
+    {
+      thumbBtns[i]->setIcon(QIcon(""));
+      thumbBtns[i]->setText("·");
+    }
+    else
+    {
+      QString thumb = extractThumbnail(recentFiles[i]);
+      if (!thumb.isEmpty())
+        thumbBtns[i]->setIcon(QIcon(
+            QPixmap(thumb).scaled(160, 90, Qt::KeepAspectRatioByExpanding,
+                                  Qt::SmoothTransformation)));
+      else
+        thumbBtns[i]->setText(QFileInfo(recentFiles[i]).baseName().left(12));
+    }
+  }
+}
+
+QString
+SettingsDialog::extractThumbnail(const QString& videoPath)
+{
+  QString outPath
+      = QStandardPaths::writableLocation(QStandardPaths::TempLocation)
+        + QString("/styra_%1.jpg").arg(qHash(videoPath));
+  if (QFile::exists(outPath))
+    return outPath;
+  QProcess proc;
+  proc.start("ffmpeg", { "-y", "-i", videoPath, "-ss", "00:00:03", "-vframes",
+                         "1", "-vf", "scale=96:64", outPath });
+  proc.waitForFinished(3000);
+  return QFile::exists(outPath) ? outPath : "";
 }
 
 void
