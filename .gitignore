@@ -1,0 +1,49 @@
+# Build artifacts
+*.o
+*.obj
+*.so
+*.a
+*.dll
+*.exe
+*.out
+
+# Binaries
+main
+
+# Build directories
+/build/
+/bin/
+/obj/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Editor/IDE configs
+.vscode/
+.idea/
+*.swp
+*~
+
+# Logs
+*.log
+
+
+# === CMake-generated ===
+.cache/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+compile_commands.json
+CTestTestfile.cmake
+Testing/
+install_manifest.txt
+
+# Ninja-specific (if using Ninja generator)
+build.ninja
+.ninja_deps
+.ninja_log
+
+#project-specific
+build/

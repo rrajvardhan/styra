@@ -1,0 +1,14 @@
+BasedOnStyle: GNU
+IndentWidth: 2              
+TabWidth: 2
+UseTab: Never               
+AllowShortFunctionsOnASingleLine: InlineOnly
+PointerAlignment: Left     
+BreakBeforeBraces: Allman  
+SpaceBeforeParens: ControlStatements
+BreakConstructorInitializers: BeforeComma
+AlignArrayOfStructures: Right
+AlignEscapedNewlines: LeftWithLastLine
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+
