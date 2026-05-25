@@ -37,7 +37,7 @@ Then clone, build, and run:
 ```bash
 
 git clone https://github.com/rrajvardhan/styra
-cd tafel
+cd styra
 mkdir build && cd build
 cmake ..
 make
