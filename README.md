@@ -11,7 +11,7 @@ Video wallpaper application for Wayland. Written in C++ using Qt and libmpv.
 - Minimal desktop-friendly UI
 
 ## A Quick Look
-
+https://github.com/user-attachments/assets/cf5dcdaf-45d1-411a-b209-bacb4a468784
 
 ## Build Instructions
 
